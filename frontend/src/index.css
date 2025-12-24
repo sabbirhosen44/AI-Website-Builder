@@ -6,6 +6,10 @@
 }
 
 @layer base {
+  body {
+    @apply bg-black text-sm antialiased;
+  }
+
   button {
     @apply cursor-pointer;
   }
