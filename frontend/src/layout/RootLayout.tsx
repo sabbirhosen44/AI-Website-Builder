@@ -1,4 +1,3 @@
-import Footer from "@/components/Footer";
 import LenisScroll from "@/components/Lenis";
 import Navbar from "@/components/Navbar";
 import { Outlet } from "react-router-dom";
