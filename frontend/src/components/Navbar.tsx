@@ -14,10 +14,10 @@ export default function Navbar() {
   const lastScrollY = useRef(0);
 
   const navLinks: NavLink[] = [
-    { name: "Home", href: "/#home" },
-    { name: "Features", href: "/#features" },
-    { name: "Process", href: "/#process" },
-    { name: "Pricing", href: "/#pricing" },
+    { name: "Home", href: "/" },
+    { name: "My Projects", href: "/projects" },
+    { name: "Community", href: "/community" },
+    { name: "Pricing", href: "/pricing" },
   ];
 
   useEffect(() => {
@@ -95,12 +95,6 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-2 lg:gap-3">
             <Link
               to="/login"
-              className="px-4 lg:px-6 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors rounded-lg"
-            >
-              Login
-            </Link>
-            <Link
-              to="/"
               className="px-4 lg:px-5 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-medium transition-all shadow-lg shadow-purple-500/25 text-sm whitespace-nowrap"
             >
               Get Started
@@ -160,16 +154,9 @@ export default function Navbar() {
         ))}
 
         {/* Mobile Buttons */}
-        <Link
-          to="/login"
-          onClick={() => setIsOpen(false)}
-          className="px-8 py-3 text-white hover:text-purple-300 transition-colors text-lg"
-        >
-          Login
-        </Link>
 
         <Link
-          to="/"
+          to="/login"
           onClick={() => setIsOpen(false)}
           className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-3 text-white rounded-lg font-semibold transition-all shadow-xl shadow-purple-500/25 text-lg"
         >

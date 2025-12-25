@@ -1,6 +1,6 @@
 import { Loader2Icon, SparklesIcon, UploadCloudIcon } from "lucide-react";
 import Marquee from "react-fast-marquee";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface Prompt {
   label: string;
@@ -9,21 +9,21 @@ interface Prompt {
 
 export default function HeroSection() {
   const [prompt, setPrompt] = useState("");
+  const [loading, setLoading] = useState<Boolean>(false);
   const [selected, setSelected] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [textIndex, setTextIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [deleting, setDeleting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+
     setTimeout(() => {
-      alert("Service is currently unavailable. Please try again later.");
       setLoading(false);
       setPrompt("");
       setSelected(null);
-    }, 10000);
+    }, 3000);
   };
 
   const placeholders = [
