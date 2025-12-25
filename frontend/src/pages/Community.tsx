@@ -3,7 +3,7 @@ import type { Project } from "@/types";
 import { Plus, Folder, ExternalLink, Eye, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { dummyProjects } from "@/assets/dummyProjects";
+import { dummyProjects } from "@/assets/DummyData";
 
 const Community = () => {
   const [isLoading, setIsLoading] = useState(true);
