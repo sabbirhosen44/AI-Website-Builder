@@ -1,11 +1,17 @@
 import LenisScroll from "@/components/Lenis";
 import Navbar from "@/components/Navbar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 const RootLayout = () => {
+  const { pathname } = useLocation();
+  const hideNavbar =
+    (pathname.startsWith("/projects") && pathname !== "/projects") ||
+    pathname.startsWith("/view/") ||
+    pathname.startsWith("/preview/");
+
   return (
     <div className="w-full overflow-x-hidden">
-      <Navbar />
+      {!hideNavbar && <Navbar />}
       <LenisScroll />
 
       <main className="w-full">

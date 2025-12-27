@@ -37,8 +37,14 @@ const router = createBrowserRouter([
       {
         path: "preview/:projectId",
         children: [
-          { index: true, element: <Preview /> },
-          { path: ":versionId", element: <Preview /> },
+          {
+            index: true,
+            element: <Preview />,
+          },
+          {
+            path: ":versionId",
+            element: <Preview />,
+          },
         ],
       },
       {
