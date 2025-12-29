@@ -1,64 +1,91 @@
-import { User } from "lucide-react";
+import React, { forwardRef, useRef, useEffect } from "react";
+import type { Project } from "@/types";
 
-export default function PreviewPanel() {
-  return (
-    <div className="hidden lg:flex flex-1 flex-col bg-white overflow-hidden">
-      <nav className="border-b border-gray-200 bg-white px-8 py-4 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <h2 className="text-2xl font-bold">LOGO</h2>
-            <div className="flex items-center gap-6">
-              <a
-                href="#"
-                className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
-              >
-                Features
-              </a>
-              <a
-                href="#"
-                className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
-              >
-                Testimonials
-              </a>
-              <a
-                href="#"
-                className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
-              >
-                Contact
-              </a>
+interface ProjectPreviewProps {
+  project: Project;
+  isGenerating: boolean;
+  device?: "phone" | "tablet" | "desktop";
+  showEditorPanel?: boolean;
+}
+
+export interface ProjectPreviewRef {
+  getCode: () => string | undefined;
+}
+
+const PreviewPanel = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
+  (
+    { project, isGenerating, device = "desktop", showEditorPanel = true },
+    ref
+  ) => {
+    const iframeRef = useRef<HTMLIFrameElement>(null);
+
+    useEffect(() => {
+      if (iframeRef.current && project.current_code) {
+        const iframe = iframeRef.current;
+        const iframeDoc =
+          iframe.contentDocument || iframe.contentWindow?.document;
+
+        if (iframeDoc) {
+          iframeDoc.open();
+          iframeDoc.write(project.current_code);
+          iframeDoc.close();
+        }
+      }
+    }, [project.current_code]);
+
+    React.useImperativeHandle(ref, () => ({
+      getCode: () => project.current_code,
+    }));
+
+    const getDeviceStyles = () => {
+      switch (device) {
+        case "phone":
+          return "w-[375px] h-full";
+        case "tablet":
+          return "w-[768px] h-full";
+        case "desktop":
+        default:
+          return "w-full h-full";
+      }
+    };
+
+    return (
+      <div className="relative h-full bg-gray-900 flex-1 overflow-hidden">
+        {project.current_code ? (
+          <div className="w-full h-full flex items-center justify-center py-2">
+            <div
+              className={`${getDeviceStyles()} bg-white  shadow-2xl overflow-auto transition-all duration-300`}
+            >
+              <iframe
+                ref={iframeRef}
+                className="w-full h-full border-0"
+                title="Project Preview"
+                sandbox="allow-scripts allow-same-origin allow-forms"
+              />
             </div>
           </div>
-          <button className="size-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
-            <User className="size-5 text-gray-600" />
-          </button>
-        </div>
-      </nav>
-
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto px-8 py-20 text-center space-y-8">
-          <h1 className="text-6xl md:text-7xl font-bold leading-tight">
-            Excellence in
-            <br />
-            Minimalism
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Discover the power of clean design and high contrast aesthetics
-          </p>
-          <button className="bg-black hover:bg-gray-800 text-white px-8 py-4 rounded-lg font-medium transition-colors">
-            Get Started Today
-          </button>
-          <div className="pt-32 space-y-6">
-            <h2 className="text-5xl md:text-6xl font-bold">
-              Simplicity That Speaks Volumes
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Our design philosophy focuses on what matters most. By eliminating
-              distractions and focusing on essential elements, we create
-              experiences that are not only beautiful but also highly effective.
-            </p>
+        ) : isGenerating ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="flex flex-col items-center gap-3">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+              <p className="text-gray-400 text-sm">Generating...</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <p className="text-gray-400 text-lg">No preview available</p>
+              <p className="text-gray-500 text-sm mt-2">
+                Start a conversation to generate your website
+              </p>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
-}
+    );
+  }
+);
+
+PreviewPanel.displayName = "PreviewPanel";
+
+export default PreviewPanel;

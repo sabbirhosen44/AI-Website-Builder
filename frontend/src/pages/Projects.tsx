@@ -6,8 +6,10 @@ import {
 import Logo from "@/assets/logo.svg";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ChatSidebar from "@/components/ChatSidebar";
-import PreviewPanel from "@/components/PreviewPanel";
-import type { Project, Message } from "@/types";
+import PreviewPanel, {
+  type ProjectPreviewRef,
+} from "@/components/PreviewPanel";
+import type { Project } from "@/types";
 import {
   Download,
   Eye,
@@ -20,7 +22,7 @@ import {
   Tablet,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 export default function ProjectBuilder() {
@@ -33,25 +35,11 @@ export default function ProjectBuilder() {
     "desktop"
   );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [prompt, setPrompt] = useState("");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content:
-        "I've enhanced your prompt to: 'Create a modern portfolio website with clean design, responsive layout, and smooth animations. Include sections for projects, skills, and contact information. Use a professional color scheme with proper typography and accessibility features.'",
-      timestamp: new Date().toISOString(),
-    },
-    {
-      id: "2",
-      role: "status",
-      content: "now generating your website...",
-      timestamp: new Date().toISOString(),
-    },
-  ]);
+  const previewRef = useRef<ProjectPreviewRef>(null);
 
   const fetchProjects = async () => {
     const foundProject = dummyProjects.find((p) => p.id === projectId);
+
     if (foundProject) {
       setProject({
         ...foundProject,
@@ -82,52 +70,6 @@ export default function ProjectBuilder() {
   useEffect(() => {
     fetchProjects();
   }, [projectId]);
-
-  const handleSubmit = () => {
-    if (!prompt.trim() || isGenerating) return;
-
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: prompt,
-      timestamp: new Date().toISOString(),
-    };
-
-    setMessages([...messages, newMessage]);
-    setPrompt("");
-    setIsGenerating(true);
-
-    // Simulate AI processing
-    setTimeout(() => {
-      const statusMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "status",
-        content: "analyzing your request...",
-        timestamp: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, statusMessage]);
-
-      // Simulate completion
-      setTimeout(() => {
-        const responseMessage: Message = {
-          id: (Date.now() + 2).toString(),
-          role: "assistant",
-          content:
-            "I've updated your website based on your request. The changes have been applied to the preview.",
-          timestamp: new Date().toISOString(),
-        };
-        setMessages((prev) => [...prev.slice(0, -1), responseMessage]);
-        setIsGenerating(false);
-      }, 2000);
-    }, 500);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
-    }
-  };
 
   if (loading) return <LoadingSpinner />;
 
@@ -238,19 +180,22 @@ export default function ProjectBuilder() {
         <ChatSidebar
           isMenuOpen={isMenuOpen}
           project={project}
-          setProject={(p) => {
-            setProject(p);
-          }}
+          setProject={setProject}
           isGenerating={isGenerating}
           setIsGenerating={setIsGenerating}
         />
-        <PreviewPanel />
+        <PreviewPanel
+          ref={previewRef}
+          project={project}
+          isGenerating={isGenerating}
+          device={device}
+        />
       </div>
 
       {isMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-50 md:hidden"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          onClick={() => setIsMenuOpen(false)}
         >
           <div
             className="absolute right-0 top-0 h-full w-64 bg-gray-900 p-6 shadow-xl"
