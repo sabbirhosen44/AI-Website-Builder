@@ -57,6 +57,12 @@ export default function ProjectBuilder() {
     }, 1000);
   };
 
+  useEffect(() => {
+    if (previewRef.current) {
+      // console.log(previewRef.current.getCode());
+    }
+  }, [project?.current_code]);
+
   const downloadCode = () => {
     console.log("Downloading code...");
   };

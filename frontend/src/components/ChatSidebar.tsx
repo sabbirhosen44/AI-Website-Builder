@@ -43,6 +43,7 @@ const ChatSidebar = ({
   };
 
   useEffect(() => {
+    console.log(messageRef);
     if (messageRef.current) {
       messageRef.current.scrollIntoView({ behavior: "smooth" });
     }
@@ -56,12 +57,7 @@ const ChatSidebar = ({
     >
       <div className="flex flex-col h-full">
         {/* Messages container */}
-        <div
-          className="flex-1 px-3 py-4 flex flex-col gap-4 scrollbar-hidden"
-          style={{
-            overflowY: "scroll",
-          }}
-        >
+        <div className="flex-1 px-2 py-4 flex flex-col gap-4 scrollbar-hidden overflow-y-auto">
           {[...(project?.conversation || []), ...(project?.versions || [])]
             .sort(
               (a, b) =>
@@ -77,7 +73,7 @@ const ChatSidebar = ({
                 return (
                   <div
                     key={msg.id}
-                    className={`flex items-start gap-3 ${
+                    className={`flex items-start gap-3  ${
                       isUser ? "justify-end" : "justify-start"
                     }`}
                   >
