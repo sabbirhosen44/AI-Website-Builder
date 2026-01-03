@@ -97,7 +97,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6 border-t border-white/5 mt-12">
           <p className="text-center sm:text-left text-xs sm:text-sm text-gray-500">
-            Copyright 2025 ©{" "}
+            Copyright {new Date().getFullYear()} ©{" "}
             <span className="text-white font-medium">AI Builder</span>. All
             Rights Reserved.
           </p>
