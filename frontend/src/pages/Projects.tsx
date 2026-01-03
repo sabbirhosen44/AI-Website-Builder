@@ -64,7 +64,25 @@ export default function ProjectBuilder() {
   }, [project?.current_code]);
 
   const downloadCode = () => {
-    console.log("Downloading code...");
+    const code = previewRef.current?.getCode() || project?.current_code;
+
+    if (!code) {
+      if (isGenerating) return;
+      return;
+    }
+
+    const blob = new Blob([code], { type: "text/html" });
+    console.log(blob);
+    const url = URL.createObjectURL(blob);
+    console.log(url);
+    const link = document.createElement("a");
+    link.href = url;
+    console.log(link);
+    link.download = `${project?.name || "website"}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const togglePublish = async () => {

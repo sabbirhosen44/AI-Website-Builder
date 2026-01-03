@@ -130,13 +130,18 @@ const PreviewPanel = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
       );
     };
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        getCode: () => project.current_code,
-      }),
-      [project.current_code]
-    );
+    useImperativeHandle(ref, () => ({
+      getCode: () => {
+        const doc = iframeRef.current?.contentDocument;
+        if (!doc) return project.current_code;
+
+        const editorScript = doc.getElementById("editor-script");
+        if (editorScript) editorScript.remove();
+
+        const html = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
+        return html;
+      },
+    }));
 
     const getDeviceStyles = () => {
       switch (device) {
