@@ -50,7 +50,7 @@ const EditorPanel = ({
   };
 
   return (
-    <div className="absolute right-0 top-0 h-full w-80 bg-gray-900 border-l border-gray-800 shadow-2xl z-50 overflow-y-auto scrollbar-hidden">
+    <div className="absolute right-0 top-0 h-full w-80 bg-gray-900 border-l border-gray-800 shadow-2xl z-50 overflow-y-auto scrollbar-hidden fade-in">
       {/* Header */}
       <div className="sticky top-0 bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between">
         <div>

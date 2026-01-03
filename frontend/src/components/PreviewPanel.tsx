@@ -47,6 +47,8 @@ const PreviewPanel = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
           const existingScript = doc.getElementById("editor-script");
           if (existingScript) existingScript.remove();
 
+          if (!showEditorPanel) return;
+
           const script = doc.createElement("script");
           script.id = "editor-script";
           script.textContent = `
@@ -99,7 +101,7 @@ const PreviewPanel = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
       };
 
       setTimeout(injectScript, 0);
-    }, [project.current_code]);
+    }, [showEditorPanel, project.current_code]);
 
     useEffect(() => {
       const handleMessage = (event: MessageEvent) => {
@@ -159,7 +161,7 @@ const PreviewPanel = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
       <div className="relative h-full bg-gray-900 flex-1 overflow-hidden">
         {project.current_code ? (
           <>
-            <div className="w-full h-full flex items-center justify-center py-2">
+            <div className="w-full h-full flex items-center justify-center ">
               <div
                 className={`${getDeviceStyles()} bg-white shadow-2xl overflow-auto transition-all duration-300 `}
               >
