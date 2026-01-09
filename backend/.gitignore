@@ -1,0 +1,48 @@
+# Dependencies
+/node_modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# Build output
+dist/
+build/
+out/
+*.js
+*.d.ts
+!*.config.js
+
+# Generated files
+/generated/prisma
+/generated
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+.AppleDouble
+.AppleDB
+
+# Testing
+.nyc_output/
+coverage/
+
+# Misc
+*.log
+.cache/
+.turbo/
