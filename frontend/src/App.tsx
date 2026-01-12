@@ -7,6 +7,7 @@ import Preview from "./pages/Preview";
 import Pricing from "./pages/Pricing";
 import Projects from "./pages/Projects";
 import View from "./pages/View";
+import AuthPage from "./pages/auth/AuthPage";
 
 const router = createBrowserRouter([
   {
@@ -54,6 +55,10 @@ const router = createBrowserRouter([
       {
         path: "view/:projectId",
         element: <View />,
+      },
+      {
+        path: "auth/:pathname",
+        element: <AuthPage />,
       },
     ],
   },

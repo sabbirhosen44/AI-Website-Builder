@@ -52,9 +52,8 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 w-full z-40 bg-gray-900/50 backdrop-blur-xl border-b border-white/10 transition-transform duration-400 ${
-          showNavbar ? "translate-y-0" : "-translate-y-full"
-        }`}
+        className={`fixed top-0 left-0 w-full z-40 bg-gray-900 backdrop-blur-xl border-border transition-transform duration-400 ${showNavbar ? "translate-y-0" : "-translate-y-full"
+          }`}
       >
         <div className="flex items-center justify-between px-4 sm:px-6 md:px-12 lg:px-16 xl:px-24 py-3 sm:py-4">
           {/* Logo */}
@@ -114,9 +113,8 @@ export default function Navbar() {
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`flex flex-col items-center justify-center gap-8 text-lg font-medium fixed inset-0 bg-gray-900/98 backdrop-blur-xl z-50 transition-all duration-300 p-6 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`flex flex-col items-center justify-center gap-8 text-lg font-medium fixed inset-0 bg-gray-900/98 backdrop-blur-xl z-50 transition-all duration-300 p-6 ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* Close Button */}
         <button

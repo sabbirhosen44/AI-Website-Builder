@@ -1,5 +1,7 @@
 import Navbar from "@/components/Navbar";
+import { Providers } from "@/providers";
 import { Outlet, useLocation } from "react-router-dom";
+import { Toaster } from "sonner";
 
 const RootLayout = () => {
   const { pathname } = useLocation();
@@ -9,13 +11,16 @@ const RootLayout = () => {
     pathname.startsWith("/preview/");
 
   return (
-    <div className="w-full overflow-x-hidden">
-      {!hideNavbar && <Navbar />}
+    <Providers>
+      <div className="w-full overflow-x-hidden">
+        <Toaster />
+        {!hideNavbar && <Navbar />}
 
-      <main className="w-full">
-        <Outlet />
-      </main>
-    </div>
+        <main className="w-full">
+          <Outlet />
+        </main>
+      </div>
+    </Providers>
   );
 };
 
