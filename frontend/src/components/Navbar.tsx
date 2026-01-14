@@ -1,7 +1,9 @@
+import Logo from "@/assets/logo.svg";
+import { authClient } from "@/lib/auth-client";
+import { UserButton } from "@daveyplate/better-auth-ui";
 import { MenuIcon, XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import Logo from "@/assets/logo.svg";
 
 interface NavLink {
   name: string;
@@ -12,6 +14,17 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showNavbar, setShowNavbar] = useState(true);
   const lastScrollY = useRef(0);
+
+  // const { data: session } = authClient.useSession();
+  const session = {
+    user: {
+      id: "clx9k3abc0001",
+      name: "Jawwad Al Sabbir",
+      email: "jawwad@example.com",
+      image: "https://avatars.githubusercontent.com/u/...",
+    },
+    expires: "2026-02-15T10:23:45.123Z",
+  };
 
   const navLinks: NavLink[] = [
     { name: "Home", href: "/" },
@@ -91,14 +104,20 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Buttons */}
-          <div className="hidden md:flex items-center gap-2 lg:gap-3">
-            <Link
-              to="/login"
-              className="px-4 lg:px-5 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-medium transition-all shadow-lg shadow-purple-500/25 text-sm whitespace-nowrap"
-            >
-              Get Started
-            </Link>
-          </div>
+          {!session?.user ? (
+            <div className="hidden md:flex items-center gap-2 lg:gap-3">
+              <Link
+                to="/login"
+                className="px-4 lg:px-5 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-medium transition-all shadow-lg shadow-purple-500/25 text-sm whitespace-nowrap"
+              >
+                Get Started
+              </Link>
+            </div>
+          ) : (
+            // <div className="dark">
+            <UserButton size="icon" />
+            // </div>
+          )}
 
           {/* Mobile Menu Button */}
           <button

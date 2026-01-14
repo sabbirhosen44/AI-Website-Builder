@@ -12,7 +12,7 @@ const RootLayout = () => {
 
   return (
     <Providers>
-      <div className="w-full overflow-x-hidden">
+      <div className="w-full overflow-x-hidden ">
         <Toaster />
         {!hideNavbar && <Navbar />}
 
