@@ -114,9 +114,9 @@ export default function Navbar() {
               </Link>
             </div>
           ) : (
-            // <div className="dark">
-            <UserButton size="icon" />
-            // </div>
+            <div className="dark">
+              <UserButton size="icon" />
+            </div>
           )}
 
           {/* Mobile Menu Button */}

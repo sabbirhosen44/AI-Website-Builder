@@ -1,13 +1,14 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RootLayout from "./layout/RootLayout";
-import Community from "./pages/Community";
-import Home from "./pages/Home";
-import MyProjects from "./pages/MyProjects";
-import Preview from "./pages/Preview";
-import Pricing from "./pages/Pricing";
-import Projects from "./pages/Projects";
-import View from "./pages/View";
+import Community from "./pages/CommunityPage";
+import Home from "./pages/HomePage";
+import MyProjects from "./pages/MyProjectsPage";
+import Preview from "./pages/PreviewPage";
+import Pricing from "./pages/PricingPage";
+import Projects from "./pages/ProjectsPage";
+import View from "./pages/ViewPage";
 import AuthPage from "./pages/auth/AuthPage";
+import SettingsPage from "./pages/SettingsPage";
 
 const router = createBrowserRouter([
   {
@@ -60,6 +61,10 @@ const router = createBrowserRouter([
         path: "auth/:pathname",
         element: <AuthPage />,
       },
+      {
+        path: "account/settings",
+        element: <SettingsPage />
+      }
     ],
   },
 ]);
