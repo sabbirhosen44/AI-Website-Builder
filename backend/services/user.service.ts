@@ -1,4 +1,5 @@
 import prisma from "../lib/prisma.js";
+import ErrorResponse from "../utils/errorResponse.util.js";
 
 export const getCredits = async (userId: string): Promise<number> => {
   const user = await prisma.user.findUnique({
@@ -6,11 +7,11 @@ export const getCredits = async (userId: string): Promise<number> => {
   });
 
   if (!user) {
-    throw new Error("User not found");
+    throw new ErrorResponse("User not found", 404);
   }
 
-  if (!user.credits) {
-    throw new Error("Credits not available for user");
+  if (user.credits === null || user.credits === undefined) {
+    throw new ErrorResponse("Credits not available for user", 400);
   }
 
   return user.credits;

@@ -1,23 +1,21 @@
 import { Request, Response } from "express";
 import { getCredits } from "../services/user.service.js";
+import asyncHandler from "../middlewares/asyncHandler.middleware.js";
+import ErrorResponse from "../utils/errorResponse.util.js";
 
-export const getUserCredits = async (req: Request, res: Response) => {
-  try {
+// Ger User Credits
+export const getUserCredits = asyncHandler(
+  async (req: Request, res: Response) => {
     const userId = req.userId;
 
     if (!userId) {
-      return res.status(401).json({
-        message: "Unauthorized",
-      });
+      throw new ErrorResponse("Unauthorized", 401);
     }
 
     const credits = await getCredits(userId);
-    res.status(200).json({ credits });
-  } catch (error: any) {
-    if (error.message === "User not found") {
-      return res.status(404).json({ message: error.message });
-    }
 
-    return res.status(500).json({ message: "Failed to fetch credits" });
+    res.status(200).json({ success: true, data: { credits } });
   }
-};
+);
+
+// Create New Project
