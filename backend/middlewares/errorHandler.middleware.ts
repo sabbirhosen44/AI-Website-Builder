@@ -1,11 +1,11 @@
-import ErrorResponse from "../utils/errorResponse.util.js";
+import ErrorResponse from "../utils/errorResponse.js";
 import { NextFunction, Request, Response } from "express";
 
 const errorHandler = (
   err: ErrorResponse,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   let statusCode = 500;
   let message = "Server Error";
