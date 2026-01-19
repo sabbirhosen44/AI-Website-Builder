@@ -70,3 +70,59 @@ export const createProject = async (userId: string, initialPrompt: string) => {
   });
   return result;
 };
+
+export const getSingleProject = async (userId: string, projectId: string) => {
+  const project = await prisma.websiteProject.findFirst({
+    where: { id: projectId, userId },
+    include: {
+      conversation: {
+        orderBy: { timestamp: "asc" },
+      },
+      versions: {
+        orderBy: { timestamp: "asc" },
+      },
+    },
+  });
+
+  if (!project) {
+    throw new ErrorResponse("Project not found", 404);
+  }
+
+  return project;
+};
+
+export const getAllUserProjects = async (userId: string) => {
+  const projects = await prisma.websiteProject.findMany({
+    where: { userId },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  if (!projects) {
+    throw new ErrorResponse("Projects are not found", 404);
+  }
+
+  return projects;
+};
+
+export const toggleProjectPublish = async (
+  userId: string,
+  projectId: string,
+) => {
+  const project = await prisma.websiteProject.findFirst({
+    where: { id: projectId, userId },
+    select: { id: true, isPublished: true },
+  });
+
+  if (!project) {
+    throw new ErrorResponse("Project not found", 404);
+  }
+
+  const updatedProject = await prisma.websiteProject.update({
+    where: { id: projectId },
+    data: {
+      isPublished: !project.isPublished,
+    },
+  });
+
+  return updatedProject;
+};

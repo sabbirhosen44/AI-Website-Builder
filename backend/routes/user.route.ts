@@ -1,14 +1,22 @@
 import express from "express";
-import { protect } from "../middlewares/auth.middleware.js";
 import {
   createUserProject,
   getUserCredits,
+  getUserProject,
+  getUserProjects,
+  purchaseCredits,
+  togglePublishProject,
 } from "../controllers/user.controller.js";
+import { protect } from "../middlewares/auth.middleware.js";
 
-const router = express.Router();
+const userRouter = express.Router();
 
-router.use(protect);
-router.get("/credits", getUserCredits);
-router.post("/projects", createUserProject);
+userRouter.use(protect);
+userRouter.get("/credits", getUserCredits);
+userRouter.post("/credits/purchase", purchaseCredits);
+userRouter.get("/projects", getUserProjects);
+userRouter.post("/projects", createUserProject);
+userRouter.get("/projects/:projectId", getUserProject);
+userRouter.patch("/projects/:projectId/publish", togglePublishProject);
 
-export default router;
+export default userRouter;
