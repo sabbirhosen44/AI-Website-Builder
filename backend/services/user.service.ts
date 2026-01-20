@@ -17,6 +17,39 @@ export const getCredits = async (userId: string): Promise<number> => {
   return user.credits;
 };
 
+export const checkUserCredits = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { credits: true },
+  });
+
+  if (!user) {
+    throw new ErrorResponse("User not found", 404);
+  }
+
+  if (user.credits < 5) {
+    throw new ErrorResponse("Add more credits to make changes", 403);
+  }
+
+  return user;
+};
+
+export const deductCredits = async (userId: string) => {
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      credits: { decrement: 5 },
+    },
+  });
+};
+
+export const refundCredits = async (userId: string) => {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { credits: { increment: 5 }, totalCreation: { decrement: 1 } },
+  });
+};
+
 export const createProject = async (userId: string, initialPrompt: string) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },

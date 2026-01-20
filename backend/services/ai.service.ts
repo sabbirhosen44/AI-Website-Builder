@@ -3,21 +3,21 @@ import ErrorResponse from "../utils/errorResponse.js";
 
 export const enhancePrompt = async (initialPrompt: string) => {
   const response = await openai.chat.completions.create({
-    model: "qwen/qwen3-coder:free",
+    model: "z-ai/glm-4.5-air:free",
     messages: [
       {
         role: "system",
         content: `You are a prompt enhancement specialist. Take the user's website request and expand it into a detailed, comprehensive prompt that will help create the best possible website.
 
-        Enhance this prompt by:
-        1. Adding specific design details (layout, color scheme, typography)
-        2. Specifying key sections and features
-        3. Describing the user experience and interactions
-        4. Including modern web design best practices
-        5. Mentioning responsive design requirements
-        6. Adding any missing but important elements
+Enhance this prompt by:
+1. Adding specific design details (layout, color scheme, typography)
+2. Specifying key sections and features
+3. Describing the user experience and interactions
+4. Including modern web design best practices
+5. Mentioning responsive design requirements
+6. Adding any missing but important elements
 
-        Return ONLY the enhanced prompt, nothing else. Make it detailed but concise (2-3 paragraphs max).`,
+Return ONLY the enhanced prompt, nothing else. Make it detailed but concise (2-3 paragraphs max).`,
       },
       {
         role: "user",
@@ -37,7 +37,7 @@ export const enhancePrompt = async (initialPrompt: string) => {
 
 export const generateWebsiteCode = async (enhancedPrompt: string) => {
   const response = await openai.chat.completions.create({
-    model: "qwen/qwen3-coder:free",
+    model: "z-ai/glm-4.5-air:free",
     messages: [
       {
         role: "system",
@@ -74,6 +74,84 @@ The HTML should be complete and ready to render as-is with Tailwind CSS.`,
 
   if (!code) {
     throw new ErrorResponse("Failed to generate website code", 500);
+  }
+
+  const cleanedCode = code
+    .replace(/```[a-z]*\n?/gi, "")
+    .replace(/```$/g, "")
+    .trim();
+
+  return cleanedCode;
+};
+
+export const enhanceUpdateRequest = async (userMessage: string) => {
+  const response = await openai.chat.completions.create({
+    model: "z-ai/glm-4.5-air:free",
+    messages: [
+      {
+        role: "system",
+        content: `You are a prompt enhancement specialist. The user wants to make changes to their website. Enhance their request to be more specific and actionable for a web developer.
+
+Enhance this by:
+1. Being specific about what elements to change
+2. Mentioning design details (colors, spacing, sizes)
+3. Clarifying the desired outcome
+4. Using clear technical terms
+
+Return ONLY the enhanced request, nothing else. Keep it concise (1-2 sentences).`,
+      },
+      {
+        role: "user",
+        content: `User's request: "${userMessage}"`,
+      },
+    ],
+  });
+
+  const enhancedRequest = response.choices[0]?.message?.content;
+  console.log(enhancedRequest);
+
+  if (!enhancedRequest) {
+    throw new ErrorResponse("Failed to enhance update request", 500);
+  }
+
+  return enhancedRequest;
+};
+
+export const generateUpdatedCode = async (
+  currentCode: string,
+  enhancedRequest: string,
+) => {
+  const response = await openai.chat.completions.create({
+    model: "z-ai/glm-4.5-air:free",
+    messages: [
+      {
+        role: "system",
+        content: `You are an expert web developer.
+
+CRITICAL REQUIREMENTS:
+- Return ONLY the complete updated HTML code with the requested changes.
+- Use Tailwind CSS for ALL styling (NO custom CSS).
+- Use Tailwind utility classes for all styling changes.
+- Include all JavaScript in <script> tags before closing </body>
+- Make sure it's a complete, standalone HTML document with Tailwind CSS
+- Return the HTML Code Only, nothing else
+
+Apply the requested changes while maintaining the Tailwind CSS styling approach.`,
+      },
+      {
+        role: "user",
+        content: `Here is the current website code: ${currentCode}
+
+The user wants this change: "${enhancedRequest}"`,
+      },
+    ],
+  });
+
+  const code = response.choices[0]?.message?.content;
+  console.log(code);
+
+  if (!code) {
+    throw new ErrorResponse("Failed to generate updated code", 500);
   }
 
   const cleanedCode = code

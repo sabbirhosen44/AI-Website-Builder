@@ -1,19 +1,17 @@
 import { NextFunction, Request, Response } from "express";
 import asyncHandler from "../middlewares/asyncHandler.middleware.js";
 import {
-  processProjectGeneration,
-  refundCredits,
-} from "../services/project.service.js";
-import {
   createProject,
   getAllUserProjects,
   getCredits,
   getSingleProject,
+  refundCredits,
   toggleProjectPublish,
 } from "../services/user.service.js";
 import ErrorResponse from "../utils/errorResponse.js";
+import { processProjectGeneration } from "../services/project.service.js";
 
-// Ger User Credits
+// Get User Credits
 export const getUserCredits = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.userId;
