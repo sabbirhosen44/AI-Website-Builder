@@ -1,163 +1,79 @@
-import openai from "../config/openai.js";
+import { AI_CONFIG } from "../config/ai.config.js";
+import openai from "../config/openai.config.js";
+import { AI_PROMPTS } from "../constants/prompts.js";
 import ErrorResponse from "../utils/errorResponse.js";
 
-export const enhancePrompt = async (initialPrompt: string) => {
-  const response = await openai.chat.completions.create({
-    model: "z-ai/glm-4.5-air:free",
-    messages: [
-      {
-        role: "system",
-        content: `You are a prompt enhancement specialist. Take the user's website request and expand it into a detailed, comprehensive prompt that will help create the best possible website.
+const callAI = async (
+  systemPrompt: string,
+  userPrompt: string,
+): Promise<string> => {
+  const models = [AI_CONFIG.PRIMARY_MODEL, ...AI_CONFIG.FALLBACK_MODELS];
 
-Enhance this prompt by:
-1. Adding specific design details (layout, color scheme, typography)
-2. Specifying key sections and features
-3. Describing the user experience and interactions
-4. Including modern web design best practices
-5. Mentioning responsive design requirements
-6. Adding any missing but important elements
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
 
-Return ONLY the enhanced prompt, nothing else. Make it detailed but concise (2-3 paragraphs max).`,
-      },
-      {
-        role: "user",
-        content: initialPrompt,
-      },
-    ],
-  });
+    const response = await openai.chat.completions.create({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    });
 
-  const enhancedPrompt = response.choices[0]?.message?.content;
+    const content = response.choices[0]?.message?.content;
+    console.log(content);
 
-  if (!enhancedPrompt) {
-    throw new ErrorResponse("Failed to enhance prompt", 500);
+    if (!content) {
+      if (i === models.length - 1) {
+        throw new ErrorResponse("AI failed to generate content", 500);
+      }
+      continue;
+    }
+
+    if (i > 0) {
+      console.log(`Using fallback model: ${model}`);
+    }
+
+    return content;
   }
 
-  return enhancedPrompt;
+  throw new ErrorResponse("All AI models failed to respond", 500);
 };
 
-export const generateWebsiteCode = async (enhancedPrompt: string) => {
-  const response = await openai.chat.completions.create({
-    model: "z-ai/glm-4.5-air:free",
-    messages: [
-      {
-        role: "system",
-        content: `You are an expert web developer. Create a complete, production-ready, single-page website based on this request: "${enhancedPrompt}"
-
-CRITICAL REQUIREMENTS:
-- You MUST output valid HTML ONLY. 
-- Use Tailwind CSS for ALL styling
-- Include this EXACT script in the <head>: <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-- Use Tailwind utility classes extensively for styling, animations, and responsiveness
-- Make it fully functional and interactive with JavaScript in <script> tag before closing </body>
-- Use modern, beautiful design with great UX using Tailwind classes
-- Make it responsive using Tailwind responsive classes (sm:, md:, lg:, xl:)
-- Use Tailwind animations and transitions (animate-*, transition-*)
-- Include all necessary meta tags
-- Use Google Fonts CDN if needed for custom fonts
-- Use placeholder images from https://placehold.co/600x400
-- Use Tailwind gradient classes for beautiful backgrounds
-- Make sure all buttons, cards, and components use Tailwind styling
-
-CRITICAL HARD RULES:
-1. You MUST put ALL output ONLY into message.content.
-2. You MUST NOT place anything in "reasoning", "analysis", "reasoning_details", or any hidden fields.
-3. You MUST NOT include internal thoughts, explanations, analysis, comments, or markdown.
-4. Do NOT include markdown, explanations, notes, or code fences.
-
-The HTML should be complete and ready to render as-is with Tailwind CSS.`,
-      },
-      { role: "user", content: enhancedPrompt },
-    ],
-  });
-
-  const code = response.choices[0]?.message?.content || "";
-
-  if (!code) {
-    throw new ErrorResponse("Failed to generate website code", 500);
-  }
-
-  const cleanedCode = code
+const cleanCode = (code: string): string => {
+  return code
     .replace(/```[a-z]*\n?/gi, "")
     .replace(/```$/g, "")
     .trim();
-
-  return cleanedCode;
 };
 
-export const enhanceUpdateRequest = async (userMessage: string) => {
-  const response = await openai.chat.completions.create({
-    model: "z-ai/glm-4.5-air:free",
-    messages: [
-      {
-        role: "system",
-        content: `You are a prompt enhancement specialist. The user wants to make changes to their website. Enhance their request to be more specific and actionable for a web developer.
+export const enhancePrompt = async (initialPrompt: string): Promise<string> => {
+  return await callAI(AI_PROMPTS.ENHANCE_PROMPT, initialPrompt);
+};
 
-Enhance this by:
-1. Being specific about what elements to change
-2. Mentioning design details (colors, spacing, sizes)
-3. Clarifying the desired outcome
-4. Using clear technical terms
+export const generateWebsiteCode = async (
+  enhancedPrompt: string,
+): Promise<string> => {
+  const code = await callAI(AI_PROMPTS.GENERATE_WEBSITE, enhancedPrompt);
+  return cleanCode(code);
+};
 
-Return ONLY the enhanced request, nothing else. Keep it concise (1-2 sentences).`,
-      },
-      {
-        role: "user",
-        content: `User's request: "${userMessage}"`,
-      },
-    ],
-  });
-
-  const enhancedRequest = response.choices[0]?.message?.content;
-  console.log(enhancedRequest);
-
-  if (!enhancedRequest) {
-    throw new ErrorResponse("Failed to enhance update request", 500);
-  }
-
-  return enhancedRequest;
+export const enhanceUpdateRequest = async (
+  userMessage: string,
+): Promise<string> => {
+  return await callAI(
+    AI_PROMPTS.ENHANCE_UPDATE_REQUEST,
+    `User's request: "${userMessage}"`,
+  );
 };
 
 export const generateUpdatedCode = async (
   currentCode: string,
   enhancedRequest: string,
-) => {
-  const response = await openai.chat.completions.create({
-    model: "z-ai/glm-4.5-air:free",
-    messages: [
-      {
-        role: "system",
-        content: `You are an expert web developer.
+): Promise<string> => {
+  const userPrompt = `Here is the current website code: ${currentCode}
+ The user wants this change: "${enhancedRequest}"`;
 
-CRITICAL REQUIREMENTS:
-- Return ONLY the complete updated HTML code with the requested changes.
-- Use Tailwind CSS for ALL styling (NO custom CSS).
-- Use Tailwind utility classes for all styling changes.
-- Include all JavaScript in <script> tags before closing </body>
-- Make sure it's a complete, standalone HTML document with Tailwind CSS
-- Return the HTML Code Only, nothing else
-
-Apply the requested changes while maintaining the Tailwind CSS styling approach.`,
-      },
-      {
-        role: "user",
-        content: `Here is the current website code: ${currentCode}
-
-The user wants this change: "${enhancedRequest}"`,
-      },
-    ],
-  });
-
-  const code = response.choices[0]?.message?.content;
-  console.log(code);
-
-  if (!code) {
-    throw new ErrorResponse("Failed to generate updated code", 500);
-  }
-
-  const cleanedCode = code
-    .replace(/```[a-z]*\n?/gi, "")
-    .replace(/```$/g, "")
-    .trim();
-
-  return cleanedCode;
+  const code = await callAI(AI_PROMPTS.UPDATE_WEBSITE, userPrompt);
+  return cleanCode(code);
 };
