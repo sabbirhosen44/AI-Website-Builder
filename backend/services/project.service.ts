@@ -6,6 +6,8 @@ import {
   generateUpdatedCode,
   generateWebsiteCode,
 } from "./ai.service.js";
+import asyncHandler from "../middlewares/asyncHandler.middleware.js";
+import { NextFunction } from "express";
 
 export const validateProjectForUpdate = async (
   userId: string,
@@ -152,4 +154,131 @@ export const processProjectUpdate = async (
   });
 
   return { code: updatedCode, version };
+};
+
+export const rollbackProjectToVersion = async (
+  projectId: string,
+  versionId: string,
+  userId: string,
+) => {
+  const version = await prisma.version.findUnique({
+    where: { id: versionId },
+    include: { project: true },
+  });
+
+  if (!version) {
+    throw new ErrorResponse("Version not found", 404);
+  }
+
+  if (version.project.userId !== userId) {
+    throw new ErrorResponse("Not authorized to access this project", 403);
+  }
+
+  if (version.projectId !== projectId) {
+    throw new ErrorResponse("Version does not belong to this project", 400);
+  }
+
+  const updatedProject = await prisma.websiteProject.update({
+    where: { id: projectId },
+    data: {
+      current_code: version.code,
+      current_version_index: version.id,
+    },
+  });
+
+  await prisma.conversation.create({
+    data: {
+      role: "assistant",
+      content:
+        "I've rolled back your website to selected version. you can now preview it.",
+      projectId,
+    },
+  });
+
+  return updatedProject;
+};
+
+export const deleteProjectService = async (
+  userId: string,
+  projectId: string,
+) => {
+  const project = await prisma.websiteProject.findFirst({
+    where: { id: projectId, userId },
+  });
+
+  if (!project) {
+    throw new ErrorResponse("Project not found", 404);
+  }
+
+  await prisma.websiteProject.delete({
+    where: { id: projectId, userId },
+  });
+
+  return { deleted: true };
+};
+
+export const getProjectPreviewCode = async (
+  projectId: string,
+  userId: string,
+) => {
+  const project = await prisma.websiteProject.findFirst({
+    where: { id: projectId, userId },
+    include: {
+      versions: true,
+    },
+  });
+
+  if (!project) {
+    throw new ErrorResponse("Project not found", 404);
+  }
+
+  return project;
+};
+
+export const getAllPublishedProjects = async () => {
+  const projects = await prisma.websiteProject.findMany({
+    where: { isPublished: true, current_code: { not: null } },
+    include: { user: true },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
+  return projects;
+};
+
+export const getProjectDetails = async (projectId: string) => {
+  const project = await prisma.websiteProject.findFirst({
+    where: { id: projectId },
+  });
+
+  if (!project || !project?.current_code || project.isPublished === false) {
+    throw new ErrorResponse("Project not found", 404);
+  }
+
+  return project;
+};
+
+export const saveProjectVersion = async (
+  userId: string,
+  projectId: string,
+  code: string,
+) => {
+  const project = await prisma.websiteProject.findUnique({
+    where: { id: projectId, userId },
+  });
+
+  if (!project) {
+    throw new ErrorResponse("Project not found", 404);
+  }
+
+  const updatedProject = await prisma.websiteProject.update({
+    where: { id: projectId },
+    data: {
+      current_code: code,
+      current_version_index: "",
+      updatedAt: new Date(),
+    },
+  });
+
+  return updatedProject;
 };
