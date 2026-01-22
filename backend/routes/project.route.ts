@@ -12,16 +12,19 @@ import { protect } from "../middlewares/auth.middleware.js";
 
 const projectRouter = express.Router();
 
+// Public Routes
+projectRouter.get("/published", getPublishedProjects);
+
+// Protected Routes
 projectRouter.use(protect);
 projectRouter.post("/:projectId/update", updateProject);
-projectRouter.patch(
+projectRouter.get(
   "/:projectId/versions/:versionId/rollback",
   rollbackToVersion,
 );
-projectRouter.delete("/delete", deleteProject);
+projectRouter.delete("/:projectId", deleteProject);
 projectRouter.get("/:projectId/preview", getProjectPreview);
-projectRouter.get("/published", getPublishedProjects);
+projectRouter.put("/:projectId/save", saveProjectCode);
 projectRouter.get("/:projectId", getProjectById);
-projectRouter.post("/:projectId/save", protect, saveProjectCode);
 
 export default projectRouter;
