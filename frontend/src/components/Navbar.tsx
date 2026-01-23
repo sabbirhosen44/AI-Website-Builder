@@ -1,7 +1,8 @@
 import Logo from "@/assets/logo.svg";
+import { useGetCredits } from "@/hooks/useUsers";
 import { authClient } from "@/lib/auth-client";
 import { UserButton } from "@daveyplate/better-auth-ui";
-import { MenuIcon, XIcon } from "lucide-react";
+import { Coins, MenuIcon, XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -15,16 +16,10 @@ export default function Navbar() {
   const [showNavbar, setShowNavbar] = useState(true);
   const lastScrollY = useRef(0);
 
-  // const { data: session } = authClient.useSession();
-  const session = {
-    user: {
-      id: "clx9k3abc0001",
-      name: "Jawwad Al Sabbir",
-      email: "jawwad@example.com",
-      image: "https://avatars.githubusercontent.com/u/...",
-    },
-    expires: "2026-02-15T10:23:45.123Z",
-  };
+  const { data: session } = authClient.useSession();
+
+  const { data: creditsData, isLoading: isLoadingCredits } = useGetCredits();
+  console.log(creditsData);
 
   const navLinks: NavLink[] = [
     { name: "Home", href: "/" },
@@ -107,15 +102,24 @@ export default function Navbar() {
           {!session?.user ? (
             <div className="hidden md:flex items-center gap-2 lg:gap-3">
               <Link
-                to="/login"
+                to="/auth/sign-in"
                 className="px-4 lg:px-5 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-medium transition-all shadow-lg shadow-purple-500/25 text-sm whitespace-nowrap"
               >
                 Get Started
               </Link>
             </div>
           ) : (
-            <div className="dark">
-              <UserButton size="icon" />
+            <div className="hidden md:flex items-center gap-3">
+              <button className="flex items-center gap-2 text-white px-3 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20  rounded-lg border border-purple-500/30 transition-all group">
+                <Coins className="size-4 text-yellow-400 group-hover:text-yellow-300 transition-colors" />{" "}
+                Crdits:{" "}
+                <span className="text-sm font-semibold text-white">
+                  {isLoadingCredits ? "..." : creditsData?.data || 0}
+                </span>
+              </button>
+              <div className="dark border-gray-500/50">
+                <UserButton size="icon" />
+              </div>
             </div>
           )}
 
@@ -158,6 +162,16 @@ export default function Navbar() {
           <span className="font-bold text-2xl text-white">AI Builder</span>
         </div>
 
+        {/* Credits in Mobile Menu */}
+        {session?.user && (
+          <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/30">
+            <Coins className="w-5 h-5 text-yellow-400" />
+            <span className="text-lg font-semibold text-white">
+              {isLoadingCredits ? "..." : creditsData?.data || 0} Credits
+            </span>
+          </div>
+        )}
+
         {/* Mobile Navigation Links */}
         {navLinks.map((link) => (
           <Link
@@ -171,14 +185,19 @@ export default function Navbar() {
         ))}
 
         {/* Mobile Buttons */}
-
-        <Link
-          to="/login"
-          onClick={() => setIsOpen(false)}
-          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-3 text-white rounded-lg font-semibold transition-all shadow-xl shadow-purple-500/25 text-lg"
-        >
-          Get Started
-        </Link>
+        {!session?.user ? (
+          <Link
+            to="/auth/sign-in"
+            onClick={() => setIsOpen(false)}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-3 text-white rounded-lg font-semibold transition-all shadow-xl shadow-purple-500/25 text-lg"
+          >
+            Get Started
+          </Link>
+        ) : (
+          <div className="dark">
+            <UserButton size="default" />
+          </div>
+        )}
       </div>
 
       {/* Spacer */}
