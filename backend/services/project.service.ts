@@ -179,7 +179,7 @@ export const rollbackProjectToVersion = async (
   }
 
   const updatedProject = await prisma.websiteProject.update({
-    where: { id: projectId },
+    where: { id: projectId, userId },
     data: {
       current_code: version.code,
       current_version_index: version.id,
