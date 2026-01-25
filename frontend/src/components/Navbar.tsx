@@ -16,7 +16,7 @@ export default function Navbar() {
   const [showNavbar, setShowNavbar] = useState(true);
   const lastScrollY = useRef(0);
 
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending: isSessionLoading } = authClient.useSession();
 
   const { data: creditsData, isLoading: isLoadingCredits } = useGetCredits();
   console.log(creditsData);
@@ -99,7 +99,9 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Buttons */}
-          {!session?.user ? (
+          {isSessionLoading ? <div className="hidden md:flex items-center gap-3">
+            <div className="w-24 h-10 bg-gray-800 animate-pulse rounded-lg" />
+          </div> : !session?.user ? (
             <div className="hidden md:flex items-center gap-2 lg:gap-3">
               <Link
                 to="/auth/sign-in"
@@ -114,7 +116,7 @@ export default function Navbar() {
                 <Coins className="size-4 text-yellow-400 group-hover:text-yellow-300 transition-colors" />{" "}
                 Crdits:{" "}
                 <span className="text-sm font-semibold text-white">
-                  {isLoadingCredits ? "..." : creditsData?.data || 0}
+                  {isLoadingCredits ? "..." : creditsData?.data ?? 0}
                 </span>
               </button>
               <div className="dark border-gray-500/50">
@@ -167,7 +169,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/30">
             <Coins className="w-5 h-5 text-yellow-400" />
             <span className="text-lg font-semibold text-white">
-              {isLoadingCredits ? "..." : creditsData?.data || 0} Credits
+              {isLoadingCredits ? "..." : creditsData?.data ?? 0} Credits
             </span>
           </div>
         )}

@@ -1,11 +1,15 @@
 import { userApi } from "@/api/users.api";
+import { authClient } from "@/lib/auth-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export const useGetCredits = () => {
+  const { data: session } = authClient.useSession();
+
   return useQuery({
     queryKey: ["credits"],
     queryFn: userApi.getCredits,
+    enabled: !!session?.user,
   });
 };
 
