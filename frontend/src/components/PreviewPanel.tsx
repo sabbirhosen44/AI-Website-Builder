@@ -22,7 +22,7 @@ export interface ProjectPreviewRef {
 const PreviewPanel = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
   (
     { project, isGenerating, device = "desktop", showEditorPanel = true },
-    ref
+    ref,
   ) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [selectedElement, setSelectedElement] = useState<any>(null);
@@ -120,7 +120,7 @@ const PreviewPanel = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
     const handleUpdate = (updates: any) => {
       iframeRef.current?.contentWindow?.postMessage(
         { type: "UPDATE_ELEMENT", payload: updates },
-        iframeOrigin
+        iframeOrigin,
       );
     };
 
@@ -128,7 +128,7 @@ const PreviewPanel = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
       setSelectedElement(null);
       iframeRef.current?.contentWindow?.postMessage(
         { type: "CLEAR_SELECTION_REQUEST" },
-        iframeOrigin
+        iframeOrigin,
       );
     };
 
@@ -157,6 +157,8 @@ const PreviewPanel = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
       }
     };
 
+    console.log(isGenerating);
+
     return (
       <div className="relative h-full bg-gray-900 flex-1 overflow-hidden">
         {project.current_code ? (
@@ -182,10 +184,23 @@ const PreviewPanel = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
             )}
           </>
         ) : isGenerating ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="flex flex-col items-center gap-3">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-              <p className="text-gray-400 text-sm">Generating...</p>
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-gray-900/80 backdrop-blur-md">
+            <div className="flex flex-col items-center gap-6">
+              {/* Big loader */}
+              <div className="relative">
+                <div className="h-20 w-20 rounded-full border-4 border-purple-500/30" />
+                <div className="absolute inset-0 h-20 w-20 animate-spin rounded-full border-4 border-purple-500 border-t-transparent" />
+              </div>
+
+              {/* Copy */}
+              <div className="text-center space-y-1">
+                <p className="text-white text-lg font-semibold">
+                  Generating preview
+                </p>
+                <p className="text-gray-400 text-sm">
+                  This may take a few seconds
+                </p>
+              </div>
             </div>
           </div>
         ) : (
@@ -200,7 +215,7 @@ const PreviewPanel = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 PreviewPanel.displayName = "PreviewPanel";

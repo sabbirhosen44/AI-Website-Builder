@@ -1,6 +1,10 @@
-import { Loader2Icon, SparklesIcon, UploadCloudIcon } from "lucide-react";
-import Marquee from "react-fast-marquee";
+import { useCreateProject } from "@/hooks/useUsers";
+import { authClient } from "@/lib/auth-client";
+import { Loader2Icon, SparklesIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import Marquee from "react-fast-marquee";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface Prompt {
   label: string;
@@ -9,21 +13,46 @@ interface Prompt {
 
 export default function HeroSection() {
   const [prompt, setPrompt] = useState("");
-  const [loading, setLoading] = useState<Boolean>(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [textIndex, setTextIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [deleting, setDeleting] = useState(false);
 
+  const navigate = useNavigate();
+  const { data: session } = authClient.useSession();
+  const createProject = useCreateProject();
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      setPrompt("");
-      setSelected(null);
-    }, 3000);
+    if (!session?.user) {
+      toast.error("Please login to create a project");
+      navigate("/auth/sign-in");
+      return;
+    }
+
+    if (prompt.trim().length < 10) {
+      toast.error("Prompt must be at least 10 characters long");
+      return;
+    }
+
+    createProject.mutate(
+      {
+        initialPrompt: prompt.trim(),
+      },
+      {
+        onSuccess: (data) => {
+          const projectId = data?.data?.id;
+
+          if (projectId) {
+            navigate(`/projects/${projectId}`);
+          }
+
+          setPrompt("");
+          setSelected(null);
+        },
+      },
+    );
   };
 
   const placeholders = [
@@ -146,24 +175,17 @@ export default function HeroSection() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             required
+            disabled={createProject.isPending}
           />
 
-          <div className="flex items-center justify-between p-3 sm:p-4 pt-0">
-            <label
-              htmlFor="file"
-              className="border border-white/10 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white p-1.5 rounded-md cursor-pointer transition-colors"
-            >
-              <input type="file" id="file" hidden />
-              <UploadCloudIcon className="size-4 sm:size-4.5" />
-            </label>
-
+          <div className="flex items-center justify-end p-3 sm:p-4 pt-0">
             <button
-              disabled={loading}
+              disabled={createProject.isPending}
               className={`flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all px-4 sm:px-6 py-2 sm:py-2.5 text-white rounded-lg font-medium shadow-lg shadow-purple-500/25 text-sm sm:text-base ${
-                loading ? "cursor-not-allowed opacity-80" : ""
+                createProject.isPending ? "cursor-not-allowed opacity-80" : ""
               }`}
             >
-              {loading ? (
+              {createProject.isPending ? (
                 <Loader2Icon className="size-4 sm:size-5 animate-spin" />
               ) : (
                 <>

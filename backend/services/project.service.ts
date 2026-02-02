@@ -53,6 +53,7 @@ export const processProjectGeneration = async (
   initialPrompt: string,
 ) => {
   const enhancedPrompt = await enhancePrompt(initialPrompt);
+  console.log(enhancePrompt);
 
   await prisma.conversation.create({
     data: {

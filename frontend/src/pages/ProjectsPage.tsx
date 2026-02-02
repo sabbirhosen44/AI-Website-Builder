@@ -1,14 +1,11 @@
-import {
-  dummyConversations,
-  dummyProjects,
-  dummyVersion,
-} from "@/assets/DummyData";
 import Logo from "@/assets/logo.svg";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import ChatSidebar from "@/components/ChatSidebar";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import PreviewPanel, {
   type ProjectPreviewRef,
 } from "@/components/PreviewPanel";
+import { useSaveProjectCode } from "@/hooks/useProjects";
+import { useGetProject, useTogglePublish } from "@/hooks/useUsers";
 import type { Project } from "@/types";
 import {
   Download,
@@ -23,45 +20,43 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 export default function ProjectBuilder() {
   const { projectId } = useParams();
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const navigate = useNavigate();
   const [device, setDevice] = useState<"phone" | "tablet" | "desktop">(
-    "desktop"
+    "desktop",
   );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const previewRef = useRef<ProjectPreviewRef>(null);
 
-  const fetchProjects = async () => {
-    const foundProject = dummyProjects.find((p) => p.id === projectId);
+  const {
+    data: projectData,
+    isLoading,
+    error,
+  } = useGetProject(projectId || "");
+  const saveProjectMutation = useSaveProjectCode();
+  const togglePublishMutation = useTogglePublish();
 
-    if (foundProject) {
-      setProject({
-        ...foundProject,
-        conversation: dummyConversations,
-        versions: dummyVersion,
-      });
-      setLoading(false);
+  const project = projectData?.data as Project | undefined;
+
+  // Only set initial loading state on first load
+  useEffect(() => {
+    if (project && !isGenerating) {
+      setIsGenerating(!project.current_code);
     }
-  };
+  }, [projectId]); // Only depend on projectId, not project
 
   const saveProject = async () => {
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-    }, 1000);
-  };
+    if (!projectId) return;
 
-  useEffect(() => {
-    if (previewRef.current) {
-      // console.log(previewRef.current.getCode());
-    }
-  }, [project?.current_code]);
+    const code = previewRef.current?.getCode() || project?.current_code;
+    if (!code) return;
+
+    saveProjectMutation.mutate({ projectId, code });
+  };
 
   const downloadCode = () => {
     const code = previewRef.current?.getCode() || project?.current_code;
@@ -72,12 +67,9 @@ export default function ProjectBuilder() {
     }
 
     const blob = new Blob([code], { type: "text/html" });
-    console.log(blob);
     const url = URL.createObjectURL(blob);
-    console.log(url);
     const link = document.createElement("a");
     link.href = url;
-    console.log(link);
     link.download = `${project?.name || "website"}.html`;
     document.body.appendChild(link);
     link.click();
@@ -86,18 +78,39 @@ export default function ProjectBuilder() {
   };
 
   const togglePublish = async () => {
-    if (project) {
-      setProject({ ...project, isPublished: !project.isPublished });
-    }
+    if (!projectId) return;
+    togglePublishMutation.mutate(projectId);
   };
 
-  useEffect(() => {
-    fetchProjects();
-  }, [projectId]);
+  if (isLoading) return <LoadingSpinner />;
 
-  if (loading) return <LoadingSpinner />;
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <div className="text-center">
+          <p className="text-2xl font-medium text-white mb-4">
+            Unable to load project!
+          </p>
+          <button
+            onClick={() => navigate("/projects")}
+            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all"
+          >
+            Go to Projects
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  return project ? (
+  if (!project) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <p className="text-2xl font-medium text-white">Project not found!</p>
+      </div>
+    );
+  }
+
+  return (
     <div className="h-screen w-full flex flex-col bg-gray-50 overflow-hidden">
       <div className="px-4 py-3 border-b bg-gray-900 border-white/10 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -157,11 +170,11 @@ export default function ProjectBuilder() {
         <div className="hidden md:flex items-center gap-2">
           <button
             onClick={saveProject}
-            disabled={isSaving}
+            disabled={saveProjectMutation.isPending}
             className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-all text-sm"
           >
             <Save className="w-4 h-4" />
-            <span>{isSaving ? "Saving..." : "Save"}</span>
+            <span>{saveProjectMutation.isPending ? "Saving..." : "Save"}</span>
           </button>
           <Link
             target="_blank"
@@ -180,14 +193,21 @@ export default function ProjectBuilder() {
           </button>
           <button
             onClick={togglePublish}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all text-sm"
+            disabled={togglePublishMutation.isPending}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-all text-sm"
           >
             {project.isPublished ? (
               <EyeOff className="w-4 h-4" />
             ) : (
               <Eye className="w-4 h-4" />
             )}
-            <span>{project.isPublished ? "Unpublish" : "Publish"}</span>
+            <span>
+              {togglePublishMutation.isPending
+                ? "..."
+                : project.isPublished
+                  ? "Unpublish"
+                  : "Publish"}
+            </span>
           </button>
         </div>
 
@@ -204,7 +224,6 @@ export default function ProjectBuilder() {
         <ChatSidebar
           isMenuOpen={isMenuOpen}
           project={project}
-          setProject={setProject}
           isGenerating={isGenerating}
           setIsGenerating={setIsGenerating}
         />
@@ -240,10 +259,13 @@ export default function ProjectBuilder() {
                   saveProject();
                   setIsMenuOpen(false);
                 }}
-                className="flex items-center gap-2 w-full px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-all text-sm"
+                disabled={saveProjectMutation.isPending}
+                className="flex items-center gap-2 w-full px-4 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-50 text-white rounded-lg transition-all text-sm"
               >
                 <Save className="w-4 h-4" />
-                <span>{isSaving ? "Saving..." : "Save"}</span>
+                <span>
+                  {saveProjectMutation.isPending ? "Saving..." : "Save"}
+                </span>
               </button>
               <Link
                 target="_blank"
@@ -269,23 +291,26 @@ export default function ProjectBuilder() {
                   togglePublish();
                   setIsMenuOpen(false);
                 }}
-                className="flex items-center gap-2 w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all text-sm"
+                disabled={togglePublishMutation.isPending}
+                className="flex items-center gap-2 w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 text-white rounded-lg transition-all text-sm"
               >
                 {project.isPublished ? (
                   <EyeOff className="w-4 h-4" />
                 ) : (
                   <Eye className="w-4 h-4" />
                 )}
-                <span>{project.isPublished ? "Unpublish" : "Publish"}</span>
+                <span>
+                  {togglePublishMutation.isPending
+                    ? "..."
+                    : project.isPublished
+                      ? "Unpublish"
+                      : "Publish"}
+                </span>
               </button>
             </nav>
           </div>
         </div>
       )}
-    </div>
-  ) : (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <p className="text-2xl font-medium text-white">Unable to load project!</p>
     </div>
   );
 }

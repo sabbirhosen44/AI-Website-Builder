@@ -13,10 +13,15 @@ export const useUpdateProject = () => {
       projectId: string;
       message: string;
     }) => projectApi.updateProject(projectId, { message }),
-    onSuccess: (_, { projectId }) => {
-      queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+    onSuccess: async (data, { projectId }) => {
+      // Refetch once to show the user message that was just added
+      await queryClient.refetchQueries({
+        queryKey: ["project", projectId],
+        exact: true,
+      });
       queryClient.invalidateQueries({ queryKey: ["credits"] });
       toast.success("Project is being updated...");
+      // Polling will handle subsequent updates for the assistant response
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to update project");

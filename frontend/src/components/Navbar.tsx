@@ -16,7 +16,8 @@ export default function Navbar() {
   const [showNavbar, setShowNavbar] = useState(true);
   const lastScrollY = useRef(0);
 
-  const { data: session, isPending: isSessionLoading } = authClient.useSession();
+  const { data: session, isPending: isSessionLoading } =
+    authClient.useSession();
 
   const { data: creditsData, isLoading: isLoadingCredits } = useGetCredits();
   console.log(creditsData);
@@ -60,8 +61,9 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 w-full z-40 bg-gray-900 backdrop-blur-xl border-border transition-transform duration-400 ${showNavbar ? "translate-y-0" : "-translate-y-full"
-          }`}
+        className={`fixed top-0 left-0 w-full z-40 bg-gray-900 backdrop-blur-xl border-border transition-transform duration-400 ${
+          showNavbar ? "translate-y-0" : "-translate-y-full"
+        }`}
       >
         <div className="flex items-center justify-between px-4 sm:px-6 md:px-12 lg:px-16 xl:px-24 py-3 sm:py-4">
           {/* Logo */}
@@ -99,9 +101,11 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Buttons */}
-          {isSessionLoading ? <div className="hidden md:flex items-center gap-3">
-            <div className="w-24 h-10 bg-gray-800 animate-pulse rounded-lg" />
-          </div> : !session?.user ? (
+          {isSessionLoading ? (
+            <div className="hidden md:flex items-center gap-3">
+              <div className="w-24 h-10 bg-gray-800 animate-pulse rounded-4xl" />
+            </div>
+          ) : !session?.user ? (
             <div className="hidden md:flex items-center gap-2 lg:gap-3">
               <Link
                 to="/auth/sign-in"
@@ -112,11 +116,11 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="hidden md:flex items-center gap-3">
-              <button className="flex items-center gap-2 text-white px-3 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20  rounded-lg border border-purple-500/30 transition-all group">
+              <button className="flex items-center gap-2 text-white px-3 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20  rounded-4xl border border-purple-500/30 transition-all group">
                 <Coins className="size-4 text-yellow-400 group-hover:text-yellow-300 transition-colors" />{" "}
                 Crdits:{" "}
                 <span className="text-sm font-semibold text-white">
-                  {isLoadingCredits ? "..." : creditsData?.data ?? 0}
+                  {isLoadingCredits ? "..." : (creditsData?.data ?? 0)}
                 </span>
               </button>
               <div className="dark border-gray-500/50">
@@ -138,8 +142,9 @@ export default function Navbar() {
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`flex flex-col items-center justify-center gap-8 text-lg font-medium fixed inset-0 bg-gray-900/98 backdrop-blur-xl z-50 transition-all duration-300 p-6 ${isOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={`flex flex-col items-center justify-center gap-8 text-lg font-medium fixed inset-0 bg-gray-900/98 backdrop-blur-xl z-50 transition-all duration-300 p-6 ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         {/* Close Button */}
         <button
@@ -169,7 +174,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/30">
             <Coins className="w-5 h-5 text-yellow-400" />
             <span className="text-lg font-semibold text-white">
-              {isLoadingCredits ? "..." : creditsData?.data ?? 0} Credits
+              {isLoadingCredits ? "..." : (creditsData?.data ?? 0)} Credits
             </span>
           </div>
         )}

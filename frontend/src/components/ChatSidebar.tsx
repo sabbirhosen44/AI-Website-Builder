@@ -2,6 +2,8 @@ import type { Message, Project, Version } from "@/types";
 import { ArrowUp, EyeIcon, Loader2Icon, UserIcon, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useUpdateProject } from "@/hooks/useProjects";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ChatSidebarProps {
   isMenuOpen: boolean;
@@ -20,15 +22,64 @@ const ChatSidebar = ({
 }: ChatSidebarProps) => {
   const messageRef = useRef<HTMLDivElement>(null);
   const [prompt, setPrompt] = useState("");
+  const updateProjectMutation = useUpdateProject();
+  const queryClient = useQueryClient();
+  const pollingIntervalRef = useRef<number | null>(null);
 
-  const handleSubmit = async () => {
+  useEffect(() => {
+    if (isGenerating) {
+      pollingIntervalRef.current = window.setInterval(() => {
+        queryClient.refetchQueries({
+          queryKey: ["project", project.id],
+          exact: true,
+        });
+      }, 500);
+    } else {
+      if (pollingIntervalRef.current) {
+        window.clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        window.clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, [isGenerating, project.id, queryClient]);
+
+  useEffect(() => {
+    if (isGenerating && project.conversation) {
+      const lastMessage = project.conversation[project.conversation.length - 1];
+
+      if (
+        lastMessage?.role === "assistant" &&
+        (lastMessage.content.includes("I've updated your website") ||
+          lastMessage.content.includes("I've created your website"))
+      ) {
+        setIsGenerating(false);
+      }
+    }
+  }, [project.conversation, isGenerating, setIsGenerating]);
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!prompt.trim() || isGenerating) return;
 
+    const userPrompt = prompt.trim();
+    setPrompt("");
     setIsGenerating(true);
 
-    setTimeout(() => {
+    try {
+      await updateProjectMutation.mutateAsync({
+        projectId: project.id,
+        message: userPrompt,
+      });
+      // Mutation hook handles refetching automatically
+    } catch (error) {
+      console.error("Error updating project:", error);
       setIsGenerating(false);
-    }, 3000);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -38,12 +89,9 @@ const ChatSidebar = ({
     }
   };
 
-  const handleRollback = async (versionId: string) => {
-    // Implement rollback logic
-  };
+  const handleRollback = async (versionId: string) => {};
 
   useEffect(() => {
-    console.log(messageRef);
     if (messageRef.current) {
       messageRef.current.scrollIntoView({ behavior: "smooth" });
     }
@@ -56,13 +104,12 @@ const ChatSidebar = ({
       }`}
     >
       <div className="flex flex-col h-full">
-        {/* Messages container */}
         <div className="flex-1 px-2 py-4 flex flex-col gap-4 scrollbar-hidden overflow-y-auto">
           {[...(project?.conversation || []), ...(project?.versions || [])]
             .sort(
               (a, b) =>
                 new Date(a.timestamp).getTime() -
-                new Date(b.timestamp).getTime()
+                new Date(b.timestamp).getTime(),
             )
             .map((message) => {
               const isMessage = "content" in message;
@@ -164,7 +211,6 @@ const ChatSidebar = ({
           <div ref={messageRef} />
         </div>
 
-        {/* Input area */}
         <form onSubmit={handleSubmit} className="m-3 relative">
           <textarea
             value={prompt}
