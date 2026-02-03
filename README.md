@@ -1,3 +1,5 @@
+![AI Website Builder Banner](./frontend/src/assets/AI%20Website%20Builder%20Banner.png)
+
 <div align="center">
 
 # AI Website Builder Platform
