@@ -12,29 +12,23 @@ const callAI = async (
   for (let i = 0; i < models.length; i++) {
     const model = models[i];
 
-    const response = await openai.chat.completions.create({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-    });
+    try {
+      const response = await openai.chat.completions.create({
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      });
 
-    const content = response.choices[0]?.message?.content;
-    console.log(content);
-
-    if (!content) {
-      if (i === models.length - 1) {
-        throw new ErrorResponse("AI failed to generate content", 500);
+      const content = response.choices[0]?.message?.content;
+      if (content) {
+        if (i > 0) console.log(`Using fallback model: ${model}`);
+        return content;
       }
-      continue;
+    } catch (err: any) {
+      console.warn(`Model ${model} failed: ${err.message || err}`);
     }
-
-    if (i > 0) {
-      console.log(`Using fallback model: ${model}`);
-    }
-
-    return content;
   }
 
   throw new ErrorResponse("All AI models failed to respond", 500);

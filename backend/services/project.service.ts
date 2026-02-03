@@ -53,7 +53,7 @@ export const processProjectGeneration = async (
   initialPrompt: string,
 ) => {
   const enhancedPrompt = await enhancePrompt(initialPrompt);
-  console.log(enhancePrompt);
+  console.log(enhancedPrompt);
 
   await prisma.conversation.create({
     data: {
@@ -72,6 +72,17 @@ export const processProjectGeneration = async (
   });
 
   const code = await generateWebsiteCode(enhancedPrompt);
+
+  if (!code) {
+    await prisma.conversation.create({
+      data: {
+        role: "assistant",
+        content:
+          "I wasn’t able to generate the code this time. Please try again.",
+        projectId,
+      },
+    });
+  }
   console.log(code);
 
   const version = await prisma.version.create({
@@ -108,6 +119,7 @@ export const processProjectUpdate = async (
   currentCode: string | null,
 ) => {
   const enhancedRequest = await enhanceUpdateRequest(userMessage);
+  console.log(enhancedRequest);
 
   await prisma.conversation.create({
     data: {
@@ -129,6 +141,19 @@ export const processProjectUpdate = async (
     currentCode || "",
     enhancedRequest,
   );
+
+  if (!updatedCode) {
+    await prisma.conversation.create({
+      data: {
+        role: "assistant",
+        content:
+          "I wasn’t able to generate the code this time. Please try again.",
+        projectId,
+      },
+    });
+  }
+
+  console.log(updatedCode);
 
   const version = await prisma.version.create({
     data: {
