@@ -35,10 +35,29 @@ const callAI = async (
 };
 
 const cleanCode = (code: string): string => {
-  return code
-    .replace(/```[a-z]*\n?/gi, "")
-    .replace(/```$/g, "")
-    .trim();
+  if (!code) return "";
+
+  const completeBlockMatch = code.match(/```(?:[a-z]*\n)?([\s\S]*?)```/i);
+  if (completeBlockMatch && completeBlockMatch[1]) {
+    return completeBlockMatch[1].trim();
+  }
+
+  let cleaned = code;
+
+  cleaned = cleaned.replace(/^[\s\S]*?```[a-z]*\n?/i, "");
+  cleaned = cleaned.replace(/\n?```[\s\S]*$/g, "");
+
+  const preambles = [
+    /^Here'?s? (?:your|the|an?) (?:updated|new|modified)?\s*(?:HTML|code|website)?:?\s*\n*/i,
+    /^(?:Updated|New|Modified)?\s*(?:HTML|code|website)?:?\s*\n*/i,
+    /^I'?ve (?:created|updated|generated|made).*?:?\s*\n*/i,
+  ];
+
+  preambles.forEach((pattern) => {
+    cleaned = cleaned.replace(pattern, "");
+  });
+
+  return cleaned.trim();
 };
 
 export const enhancePrompt = async (initialPrompt: string): Promise<string> => {
