@@ -42,12 +42,11 @@ export default function ProjectBuilder() {
 
   const project = projectData?.data as Project | undefined;
 
-  // Only set initial loading state on first load
   useEffect(() => {
     if (project && !isGenerating) {
       setIsGenerating(!project.current_code);
     }
-  }, [projectId]); // Only depend on projectId, not project
+  }, [projectId]);
 
   const saveProject = async () => {
     if (!projectId) return;

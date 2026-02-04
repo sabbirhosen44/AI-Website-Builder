@@ -173,6 +173,9 @@ export const saveProjectCode = asyncHandler(
     const { projectId } = req.params;
     const { code } = req.body;
 
+    console.log("Entering...... for save");
+    console.log("try to save code", code);
+
     if (!userId) {
       throw new ErrorResponse("Unauthorized", 401);
     }
