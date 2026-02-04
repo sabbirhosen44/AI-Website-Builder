@@ -1,34 +1,37 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
+import ConfirmModal from "@/components/ConfirmModal";
 import type { Project } from "@/types";
 import { Plus, Folder, ExternalLink, Eye, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { dummyProjects } from "@/assets/DummyData";
+import { useDeleteProject, useGetUserProjects } from "@/hooks/useProjects";
 
 const MyProjects = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [projects, setProjects] = useState<Project[]>([]);
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
-  const fetchProjects = async () => {
-    setTimeout(() => {
-      setIsLoading(false);
-      setProjects(dummyProjects);
-    }, 1000);
+  const { data, isLoading } = useGetUserProjects();
+  const projects = data?.data || [];
+  const deleteProjectMutation = useDeleteProject();
+
+  const handleDeleteClick = (projectId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setProjectToDelete(projectId);
+    setIsModalOpen(true);
   };
 
-  const handleDelete = (projectId: string) => {
-    setProjects(projects.filter((p) => p.id !== projectId));
+  const handleConfirmDelete = () => {
+    if (projectToDelete) {
+      deleteProjectMutation.mutate(projectToDelete);
+      setProjectToDelete(null);
+    }
   };
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
 
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-12  pb-12 sm:pb-16 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-12 pb-12 sm:pb-16 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
       {projects.length > 0 ? (
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
@@ -50,11 +53,11 @@ const MyProjects = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {projects.map((project) => (
+            {projects.map((project: Project) => (
               <div
                 onClick={() => navigate(`/projects/${project.id}`)}
                 key={project.id}
-                className="w-80 group bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden hover:border-purple-500/50 transition-all cursor-pointer "
+                className="w-80 group bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden hover:border-purple-500/50 transition-all cursor-pointer"
               >
                 <div className="relative w-full h-48 bg-gray-900 overflow-hidden">
                   {project.current_code ? (
@@ -80,11 +83,9 @@ const MyProjects = () => {
                   )}
 
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(project.id);
-                    }}
-                    className="absolute top-2 sm:top-3 right-2 sm:right-3 p-1.5 sm:p-2 bg-white backdrop-blur-sm rounded-lg transition-all opacity-0 group-hover:opacity-100 hover:bg-gray-100 z-10"
+                    onClick={(e) => handleDeleteClick(project.id, e)}
+                    disabled={deleteProjectMutation.isPending}
+                    className="absolute top-2 sm:top-3 right-2 sm:right-3 p-1.5 sm:p-2 bg-white backdrop-blur-sm rounded-lg transition-all opacity-0 group-hover:opacity-100 hover:bg-gray-100 z-10 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Trash2 className="w-4 h-4 text-red-600" />
                   </button>
@@ -104,14 +105,20 @@ const MyProjects = () => {
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <button
-                        onClick={() => navigate(`/preview/${project.id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/preview/${project.id}`);
+                        }}
                         className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gray-300/10 hover:bg-white/10 border border-white/10 text-white rounded-lg font-medium transition-all text-xs sm:text-sm"
                       >
                         <Eye className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
                         Preview
                       </button>
                       <button
-                        onClick={() => navigate(`/projects/${project.id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/projects/${project.id}`);
+                        }}
                         className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gray-300/10 hover:bg-white/10 border border-white/10 text-white rounded-lg font-medium transition-all text-xs sm:text-sm"
                       >
                         <ExternalLink className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
@@ -145,6 +152,20 @@ const MyProjects = () => {
           </button>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setProjectToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Project"
+        message="Are you sure you want to delete this project? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDanger={true}
+      />
     </div>
   );
 };

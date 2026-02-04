@@ -9,6 +9,7 @@ import {
   updateProject,
 } from "../controllers/project.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
+import { getUserProjects } from "../controllers/user.controller.js";
 
 const projectRouter = express.Router();
 
@@ -17,6 +18,7 @@ projectRouter.get("/published", getPublishedProjects);
 
 // Protected Routes
 projectRouter.use(protect);
+projectRouter.get("/", getUserProjects);
 projectRouter.post("/:projectId/update", updateProject);
 projectRouter.get(
   "/:projectId/versions/:versionId/rollback",

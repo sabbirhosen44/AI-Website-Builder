@@ -82,6 +82,13 @@ export const useGetPublishedProjects = () => {
   });
 };
 
+export const useGetUserProjects = () => {
+  return useQuery({
+    queryKey: ["projects"],
+    queryFn: projectApi.getUserProjects,
+  });
+};
+
 export const useGetProjectById = (projectId: string) => {
   return useQuery({
     queryKey: ["publicProject", projectId],

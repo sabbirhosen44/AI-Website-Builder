@@ -243,6 +243,25 @@ export const deleteProjectService = async (
   return { deleted: true };
 };
 
+export const getUserProjectsService = async (userId: string) => {
+  const projects = await prisma.websiteProject.findMany({
+    where: { userId },
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      id: true,
+      name: true,
+      initial_prompt: true,
+      current_code: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return projects;
+};
+
 export const getProjectPreviewCode = async (
   projectId: string,
   userId: string,

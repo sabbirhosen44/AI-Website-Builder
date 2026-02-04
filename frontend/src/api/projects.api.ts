@@ -21,6 +21,11 @@ export const projectApi = {
     return data;
   },
 
+  getUserProjects: async () => {
+    const { data } = await axiosInstance.get("/projects");
+    return data;
+  },
+
   getProjectPreview: async (projectId: string) => {
     const { data } = await axiosInstance.get(`/projects/${projectId}/preview`);
     return data;

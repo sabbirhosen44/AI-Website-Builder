@@ -166,15 +166,30 @@ export const getProjectById = asyncHandler(
   },
 );
 
+// Get User Projects
+export const getUserProjects = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.userId;
+
+    if (!userId) {
+      throw new ErrorResponse("Unauthorized", 401);
+    }
+
+    const projects = await getUserProjectsService(userId);
+
+    res.status(200).json({
+      success: true,
+      data: projects,
+    });
+  },
+);
+
 // Save Project
 export const saveProjectCode = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.userId;
     const { projectId } = req.params;
     const { code } = req.body;
-
-    console.log("Entering...... for save");
-    console.log("try to save code", code);
 
     if (!userId) {
       throw new ErrorResponse("Unauthorized", 401);
