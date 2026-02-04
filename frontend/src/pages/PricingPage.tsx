@@ -14,7 +14,7 @@ interface Plan {
 export default function PricingSection() {
   const [plans] = useState<Plan[]>(appPlans);
 
-  const handlePurchase = async (planId: string) => {};
+  const handlePurchase = async () => {};
 
   return (
     <section className="min-h-screen w-full flex flex-col items-center justify-center px-4 sm:px-6 py-12 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
@@ -98,7 +98,7 @@ export default function PricingSection() {
 
                   <button
                     onClick={() => {
-                      handlePurchase(plan.id);
+                      handlePurchase();
                     }}
                     className={`w-full py-2.5 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base ${
                       isPro
