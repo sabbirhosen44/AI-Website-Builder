@@ -69,6 +69,7 @@ export const useTogglePublish = () => {
     onSuccess: (_, projectId) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["publishedProjects"] });
       toast.success("Project publish status updated!");
     },
     onError: (error: any) => {

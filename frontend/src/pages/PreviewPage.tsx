@@ -1,36 +1,22 @@
-import { dummyProjects } from "@/assets/DummyData";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import PreviewPanel from "@/components/PreviewPanel";
 import type { Project } from "@/types";
-import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useGetProjectPreview } from "@/hooks/useProjects";
 
 const Preview = () => {
-  const { projectId, versionId } = useParams();
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(true);
+  const { projectId } = useParams();
 
-  const fetchCode = () => {
-    const foundProject = dummyProjects.find(
-      (project) => project.id === projectId
-    );
-    setTimeout(() => {
-      if (foundProject) setCode(foundProject.current_code);
-      setLoading(false);
-    }, 2000);
-  };
+  const { data, isLoading } = useGetProjectPreview(projectId || "");
+  const project = data?.data;
 
-  useEffect(() => {
-    fetchCode();
-  }, [projectId]);
-
-  if (loading) <LoadingSpinner />;
+  if (isLoading) return <LoadingSpinner />;
 
   return (
     <div className="w-full h-screen bg-gray-900 fade-in">
-      {code && (
+      {project?.current_code && (
         <PreviewPanel
-          project={{ current_code: code } as Project}
+          project={{ current_code: project.current_code } as Project}
           isGenerating={false}
           showEditorPanel={false}
         />

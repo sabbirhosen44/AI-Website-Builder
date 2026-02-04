@@ -1,29 +1,14 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useGetPublishedProjects } from "@/hooks/useProjects";
 import type { Project } from "@/types";
-import { Plus, Folder, ExternalLink, Eye, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Folder, Plus } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { dummyProjects } from "@/assets/DummyData";
 
 const Community = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [projects, setProjects] = useState<Project[]>([]);
   const navigate = useNavigate();
 
-  const fetchProjects = async () => {
-    setTimeout(() => {
-      setIsLoading(false);
-      setProjects(dummyProjects);
-    }, 1000);
-  };
-
-  const handleDelete = (projectId: string) => {
-    setProjects(projects.filter((p) => p.id !== projectId));
-  };
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
+  const { data, isLoading } = useGetPublishedProjects();
+  const projects = data?.data || [];
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -43,7 +28,7 @@ const Community = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {projects.map((project) => (
+            {projects.map((project: Project) => (
               <Link
                 key={project.id}
                 to={`/view/${project.id}`}
