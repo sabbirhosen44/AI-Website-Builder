@@ -10,6 +10,8 @@ const Community = () => {
   const { data, isLoading } = useGetPublishedProjects();
   const projects = data?.data || [];
 
+  console.log(projects);
+
   if (isLoading) return <LoadingSpinner />;
 
   return (
@@ -82,11 +84,11 @@ const Community = () => {
                           />
                         ) : (
                           <div className="size-5 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700">
-                            {project.user?.fullName?.charAt(0).toUpperCase()}
+                            {project.user?.name?.charAt(0).toUpperCase()}
                           </div>
                         )}
 
-                        {project.user?.fullName}
+                        {project.user?.name}
                       </div>
                     </button>
                   </div>

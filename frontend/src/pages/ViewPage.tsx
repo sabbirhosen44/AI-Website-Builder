@@ -1,45 +1,65 @@
-import { dummyProjects } from "@/assets/DummyData";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import PreviewPanel from "@/components/PreviewPanel";
+import { useGetProjectById } from "@/hooks/useProjects";
 import type { Project } from "@/types";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-const View = () => {
+const ViewPage = () => {
   const { projectId } = useParams();
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const foundProject = dummyProjects.find(
-      (project) => project.id === projectId
-    );
-    setTimeout(() => {
-      if (foundProject) setCode(foundProject.current_code);
-      setLoading(false);
-    }, 2000);
-  }, [projectId]);
+  const { data, isLoading, error } = useGetProjectById(projectId || "");
+  const project = data?.data as Project | undefined;
 
-  if (loading) return <LoadingSpinner />;
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
-  if (!code)
+  if (error || !project) {
     return (
-      <div className="flex items-center justify-center h-full text-white">
-        Project not found
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <div className="text-center">
+          <p className="text-2xl font-medium text-white mb-4">
+            Project not found or not published!
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all"
+          >
+            Go to Home
+          </button>
+        </div>
       </div>
     );
+  }
+
+  if (!project.current_code) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <div className="text-center">
+          <p className="text-2xl font-medium text-white mb-4">
+            This project has no content yet!
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all"
+          >
+            Go to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-screen bg-gray-900 fade-in">
-      {code && (
-        <PreviewPanel
-          project={{ current_code: code } as Project}
-          isGenerating={false}
-          showEditorPanel={false}
-        />
-      )}
+      <PreviewPanel
+        project={project}
+        isGenerating={false}
+        showEditorPanel={false}
+      />
     </div>
   );
 };
 
-export default View;
+export default ViewPage;
