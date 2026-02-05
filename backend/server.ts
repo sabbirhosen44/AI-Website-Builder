@@ -2,10 +2,11 @@ import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { Request, Response } from "express";
+import { handleStripeWebhook } from "./controllers/webhook.controller.js";
 import { auth } from "./lib/auth.js";
 import errorHandler from "./middlewares/errorHandler.middleware.js";
-import userRoutes from "./routes/user.route.js";
 import projectRoutes from "./routes/project.route.js";
+import userRoutes from "./routes/user.route.js";
 
 dotenv.config();
 const app = express();
@@ -15,8 +16,14 @@ const corsOption = {
   origin: process.env.CLIENT_URL?.split(",") || [],
   credentials: true,
 };
-
 app.use(cors(corsOption));
+
+app.post(
+  "/api/webhooks/stripe",
+  express.raw({ type: "application/json" }),
+  handleStripeWebhook,
+);
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 

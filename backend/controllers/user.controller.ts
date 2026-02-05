@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import asyncHandler from "../middlewares/asyncHandler.middleware.js";
+import { processProjectGeneration } from "../services/project.service.js";
 import {
   createProject,
   getAllUserProjects,
@@ -9,7 +10,7 @@ import {
   toggleProjectPublish,
 } from "../services/user.service.js";
 import ErrorResponse from "../utils/errorResponse.js";
-import { processProjectGeneration } from "../services/project.service.js";
+import { createCheckoutSession } from "../services/stripe.service.js";
 
 // Get User Credits
 export const getUserCredits = asyncHandler(
@@ -129,5 +130,30 @@ export const togglePublishProject = asyncHandler(
 
 // Purchase Credits
 export const purchaseCredits = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {},
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.userId;
+
+    if (!userId) {
+      throw new ErrorResponse("Unauthorized", 401);
+    }
+
+    const { planId } = req.body;
+
+    if (!planId) {
+      throw new ErrorResponse("Plan ID is required", 400);
+    }
+
+    const origin = req.headers.origin as string;
+
+    if (!origin) {
+      throw new ErrorResponse("Origin header is required", 400);
+    }
+
+    const session = await createCheckoutSession(userId, planId, origin);
+
+    res.status(200).json({
+      success: true,
+      data: { payment_link: session.url },
+    });
+  },
 );
