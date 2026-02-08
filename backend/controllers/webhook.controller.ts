@@ -31,13 +31,53 @@ export const handleStripeWebhook = asyncHandler(
     }
 
     if (event.type === "checkout.session.completed") {
-      console.log("💳 Processing checkout.session.completed");
+      console.log("Processing checkout.session.completed");
       console.log(
-        "📦 Session data:",
+        "Session metadata:",
         JSON.stringify(event.data.object.metadata),
       );
-      await handlePaymentSuccess(event.data.object);
-      console.log("✅ Payment processed successfully");
+
+      try {
+        await handlePaymentSuccess(event.data.object);
+        console.log("Payment processed successfully");
+      } catch (error: any) {
+        console.error("Error in handlePaymentSuccess:", error.message);
+        throw error;
+      }
+    } else if (event.type === "payment_intent.succeeded") {
+      console.log("Processing payment_intent.succeeded");
+
+      try {
+        const paymentIntent = event.data.object as any;
+        console.log("Payment Intent ID:", paymentIntent.id);
+
+        const sessions = await stripe.checkout.sessions.list({
+          payment_intent: paymentIntent.id,
+          limit: 1,
+        });
+
+        if (sessions.data.length > 0) {
+          const session = sessions.data[0];
+          console.log("Found session:", session.id);
+          console.log("Session metadata:", JSON.stringify(session.metadata));
+
+          await handlePaymentSuccess(session);
+          console.log("Payment processed successfully via payment_intent");
+        } else {
+          console.error(
+            "No session found for payment intent:",
+            paymentIntent.id,
+          );
+        }
+      } catch (error: any) {
+        console.error(
+          "Error processing payment_intent.succeeded:",
+          error.message,
+        );
+        throw error;
+      }
+    } else {
+      console.log("Ignoring event type:", event.type);
     }
 
     res.status(200).json({ success: true, received: true });
