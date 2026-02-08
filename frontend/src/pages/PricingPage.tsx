@@ -28,14 +28,17 @@ export default function PricingSection() {
     if (paymentStatus === "success") {
       queryClient.invalidateQueries({ queryKey: ["credits"] });
       toast.success("Payment successful! Your credits have been added.");
-      searchParams.delete("payment");
-      setSearchParams(searchParams);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("payment");
+      setSearchParams(newParams);
     } else if (paymentStatus === "cancelled") {
       toast.error("Payment was cancelled");
-      searchParams.delete("payment");
-      setSearchParams(searchParams);
+
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("payment");
+      setSearchParams(newParams);
     }
-  }, [searchParams, queryClient]);
+  }, [searchParams, queryClient, setSearchParams]);
 
   const handlePurchase = (planId: string) => {
     console.log(`Request for purchase credits for plan ${planId}`);
@@ -123,7 +126,8 @@ export default function PricingSection() {
                   </ul>
 
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       handlePurchase(plan.id);
                     }}
                     className={`w-full py-2.5 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base ${

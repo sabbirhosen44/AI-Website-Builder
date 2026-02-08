@@ -20,7 +20,6 @@ export default function Navbar() {
     authClient.useSession();
 
   const { data: creditsData, isLoading: isLoadingCredits } = useGetCredits();
-  console.log(creditsData);
 
   const navLinks: NavLink[] = [
     { name: "Home", href: "/" },
