@@ -29,7 +29,7 @@ export default function ProjectBuilder() {
     "desktop",
   );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(true);
   const previewRef = useRef<ProjectPreviewRef>(null);
 
   const {
