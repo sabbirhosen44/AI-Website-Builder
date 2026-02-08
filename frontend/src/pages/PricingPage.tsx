@@ -38,6 +38,7 @@ export default function PricingSection() {
   }, [searchParams, queryClient]);
 
   const handlePurchase = (planId: string) => {
+    console.log(`Request for purchase credits for plan ${planId}`);
     purchaseCreditsMutation.mutate(planId);
   };
 
