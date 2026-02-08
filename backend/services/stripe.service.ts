@@ -8,16 +8,11 @@ export const createCheckoutSession = async (
   planId: string,
   origin: string,
 ) => {
-  console.log("🛒 Creating checkout session");
-  console.log("👤 User ID:", userId);
-  console.log("📦 Plan ID:", planId);
-  console.log("🌐 Origin:", origin);
   if (!CREDIT_PLANS[planId as PlanId]) {
     throw new ErrorResponse("Plan not found", 401);
   }
 
   const plan = CREDIT_PLANS[planId as PlanId];
-  console.log("💰 Plan details:", plan);
 
   const transaction = await prisma.transaction.create({
     data: {
@@ -28,8 +23,6 @@ export const createCheckoutSession = async (
       isPaid: false,
     },
   });
-
-  console.log("📝 Transaction created:", transaction.id);
 
   const session = await stripe.checkout.sessions.create({
     success_url: `${origin}/pricing?payment=success`,
@@ -56,32 +49,20 @@ export const createCheckoutSession = async (
     expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
   });
 
-  console.log("🔗 Checkout session created:", session.id);
-  console.log("🔗 Session URL:", session.url);
-
   return session;
 };
 
 export const handlePaymentSuccess = async (session: any) => {
-  console.log("💳 handlePaymentSuccess called");
-  console.log("📦 Session metadata:", session.metadata);
   const { transactionId, userId, credits } = session.metadata;
 
   if (!transactionId || !userId || !credits) {
-    console.error("❌ Missing metadata:", { transactionId, userId, credits });
     throw new ErrorResponse("Invalid session metadata", 400);
   }
-
-  console.log(`💰 Updating transaction ${transactionId}`);
 
   await prisma.transaction.update({
     where: { id: transactionId },
     data: { isPaid: true },
   });
-
-  console.log("✅ Transaction updated:");
-
-  console.log(`👤 Adding ${credits} credits to user ${userId}`);
 
   await prisma.user.update({
     where: { id: userId },
@@ -89,6 +70,4 @@ export const handlePaymentSuccess = async (session: any) => {
       credits: { increment: parseInt(credits) },
     },
   });
-
-  console.log(`✅ User credits updated. `);
 };
