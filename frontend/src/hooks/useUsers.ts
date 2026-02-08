@@ -14,8 +14,6 @@ export const useGetCredits = () => {
 };
 
 export const usePurchaseCredits = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (planId: string) => userApi.purchaseCredits(planId),
     onSuccess: (data) => {
