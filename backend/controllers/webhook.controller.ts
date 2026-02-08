@@ -6,6 +6,7 @@ import ErrorResponse from "../utils/errorResponse.js";
 
 export const handleStripeWebhook = asyncHandler(
   async (req: Request, res: Response) => {
+    console.log("🔔 Webhook received");
     const sig = req.headers["stripe-signature"] as string;
 
     if (!sig) {

@@ -25,8 +25,8 @@ export const createCheckoutSession = async (
   });
 
   const session = await stripe.checkout.sessions.create({
-    success_url: `${origin}/loading`,
-    cancel_url: `${origin}`,
+    success_url: `${origin}/pricing?payment=success`,
+    cancel_url: `${origin}/pricing?payment=cancelled`,
     line_items: [
       {
         price_data: {

@@ -5,6 +5,7 @@ import {
   getAllPublishedProjects,
   getProjectDetails,
   getProjectPreviewCode,
+  getUserProjectsService,
   processProjectUpdate,
   rollbackProjectToVersion,
   saveProjectVersion,

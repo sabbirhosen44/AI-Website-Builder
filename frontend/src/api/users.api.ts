@@ -6,8 +6,10 @@ export const userApi = {
     return data;
   },
 
-  purchaseCredits: async () => {
-    const { data } = await axiosInstance.post("/users/credits/purchase");
+  purchaseCredits: async (planId: string) => {
+    const { data } = await axiosInstance.post("/users/credits/purchase", {
+      planId,
+    });
     return data;
   },
 

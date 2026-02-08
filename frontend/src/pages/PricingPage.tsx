@@ -1,6 +1,10 @@
 import { Check } from "lucide-react";
 import { appPlans } from "@/assets/DummyData";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { usePurchaseCredits } from "@/hooks/useUsers";
+import { useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface Plan {
   id: string;
@@ -13,8 +17,29 @@ interface Plan {
 
 export default function PricingSection() {
   const [plans] = useState<Plan[]>(appPlans);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
 
-  const handlePurchase = async () => {};
+  const purchaseCreditsMutation = usePurchaseCredits();
+
+  useEffect(() => {
+    const paymentStatus = searchParams.get("payment");
+
+    if (paymentStatus === "success") {
+      queryClient.invalidateQueries({ queryKey: ["credits"] });
+      toast.success("Payment successful! Your credits have been added.");
+      searchParams.delete("payment");
+      setSearchParams(searchParams);
+    } else if (paymentStatus === "cancelled") {
+      toast.error("Payment was cancelled");
+      searchParams.delete("payment");
+      setSearchParams(searchParams);
+    }
+  }, [searchParams, queryClient]);
+
+  const handlePurchase = (planId: string) => {
+    purchaseCreditsMutation.mutate(planId);
+  };
 
   return (
     <section className="min-h-screen w-full flex flex-col items-center justify-center px-4 sm:px-6 py-12 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
@@ -98,7 +123,7 @@ export default function PricingSection() {
 
                   <button
                     onClick={() => {
-                      handlePurchase();
+                      handlePurchase(plan.id);
                     }}
                     className={`w-full py-2.5 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base ${
                       isPro

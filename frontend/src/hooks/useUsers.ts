@@ -17,10 +17,11 @@ export const usePurchaseCredits = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: userApi.purchaseCredits,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["credits"] });
-      toast.success("Credits purchased successfully!");
+    mutationFn: (planId: string) => userApi.purchaseCredits(planId),
+    onSuccess: (data) => {
+      if (data?.data?.payment_link) {
+        window.location.href = data.data.payment_link;
+      }
     },
     onError: (error: any) => {
       toast.error(

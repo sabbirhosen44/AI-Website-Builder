@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import asyncHandler from "../middlewares/asyncHandler.middleware.js";
 import { processProjectGeneration } from "../services/project.service.js";
+import { createCheckoutSession } from "../services/stripe.service.js";
 import {
   createProject,
   getAllUserProjects,
@@ -10,7 +11,6 @@ import {
   toggleProjectPublish,
 } from "../services/user.service.js";
 import ErrorResponse from "../utils/errorResponse.js";
-import { createCheckoutSession } from "../services/stripe.service.js";
 
 // Get User Credits
 export const getUserCredits = asyncHandler(
