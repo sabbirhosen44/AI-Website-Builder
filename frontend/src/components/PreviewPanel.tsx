@@ -7,7 +7,7 @@ import {
 } from "react";
 import type { Project } from "@/types";
 import EditorPanel from "./EditorPanel";
-import AIBuildingLoader from "./AiBuildingLoader";
+import AIBuildingLoader from "./AIBuildingLoader";
 
 interface ProjectPreviewProps {
   project: Project;
@@ -185,25 +185,6 @@ const PreviewPanel = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
             )}
           </>
         ) : isGenerating ? (
-          // <div className="absolute inset-0 z-20 flex items-center justify-center bg-gray-900/80 backdrop-blur-md">
-          //   <div className="flex flex-col items-center gap-6">
-          //     {/* Big loader */}
-          //     <div className="relative">
-          //       <div className="h-20 w-20 rounded-full border-4 border-purple-500/30" />
-          //       <div className="absolute inset-0 h-20 w-20 animate-spin rounded-full border-4 border-purple-500 border-t-transparent" />
-          //     </div>
-
-          //     {/* Copy */}
-          //     <div className="text-center space-y-1">
-          //       <p className="text-white text-lg font-semibold">
-          //         Generating preview
-          //       </p>
-          //       <p className="text-gray-400 text-sm">
-          //         This may take a few seconds
-          //       </p>
-          //     </div>
-          //   </div>
-          // </div>
           <AIBuildingLoader />
         ) : (
           <div className="flex items-center justify-center h-full">
